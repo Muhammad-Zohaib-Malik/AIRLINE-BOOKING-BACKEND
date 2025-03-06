@@ -1,15 +1,27 @@
 import mongoose from 'mongoose';
 
 const airplaneSchema = new mongoose.Schema({
+  airLine: {
+    type: String,
+    required: true,
+    trim: true
+  },
   modelNumber: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
-  capacity: {
+  seatingCapacity: {
     type: Number,
-    required: true
+    required: true,
+    min: 1
   },
-},{timestamps:true});
+  status: {
+    type: String,
+    enum: ["active", "inactive"],
+    default: "active"
+  }
+}, { timestamps: true });
 
 export const Airplane = mongoose.model('Airplane', airplaneSchema);
 
