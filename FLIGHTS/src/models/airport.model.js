@@ -11,6 +11,7 @@ const airportSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    trim: true
   },
   city: {
     type: mongoose.Schema.Types.ObjectId,
@@ -20,6 +21,7 @@ const airportSchema = new mongoose.Schema({
   address: {
     type: String,
     required: true,
+    trim: true
   },
 }, { timestamps: true });
 
