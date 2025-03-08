@@ -23,6 +23,20 @@ export const airportSchema = z.object({
   address: z.string().trim().min(5, "Address is required")
 })
 
+// flight validation
+export const flightSchema = z.object({
+  flightNumber: z.string().trim().min(1, "Flight number is required and must be a string"),
+  airplaneId: z.string().length(24, "Airplane ID must be a valid ObjectId"),
+  departureAirportId: z.string().length(24, "Departure Airport ID must be a valid ObjectId"),
+  arrivalAirportId: z.string().length(24, "Arrival Airport ID must be a valid ObjectId"),
+  departureTime: z.string().min(1, "Departure time is required"),
+  arrivalTime: z.string().min(1, "Arrival time is required"),
+  price: z.number().positive("Price must be a positive number"),
+  boardingGate: z.string().optional(),
+  totalSeats: z.number().positive("Total seats must be a positive number")
+})
+
+
 
 
 
@@ -38,3 +52,4 @@ export const validateData = (schema, data) => {
 export const validateAirplane = (data) => validateData(airplaneSchema, data);
 export const validateCity = (data) => validateData(citySchema, data);
 export const validateAirport = (data) => validateData(airportSchema, data);
+export const validateFlight = (data) => validateData(flightSchema, data);
