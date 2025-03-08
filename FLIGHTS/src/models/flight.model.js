@@ -13,12 +13,12 @@ const flightSchema = new mongoose.Schema({
   },
   departureAirportId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Airport',
+    ref: 'City',
     required: true
   },
   arrivalAirportId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Airport',
+    ref: 'City',
     required: true
   },
   departureTime: {
@@ -40,7 +40,7 @@ const flightSchema = new mongoose.Schema({
     type: Number,
     required: true
   }
-});
+}, { timestamps: true });
 
 export const Flight = mongoose.model('Flight', flightSchema);
 
