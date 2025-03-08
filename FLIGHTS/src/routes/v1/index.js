@@ -2,6 +2,7 @@ import express from 'express'
 import { createAirplane, deleteAirplaneById, getAirplaneById, getAllAirplanes, updateAirplaneById } from '../../controllers/airplane.controller.js'
 import { createCity, deleteCityById, getAllCities, getCityById, updateCityById } from '../../controllers/city.controller.js'
 import { createAirport, deleteAirportById, getAirportById, getAllAirports, updateAirportById } from '../../controllers/airport.controller.js'
+import { createFlight, deleteFlightById, getAllFlights, getFlightById, updateFlightById } from '../../controllers/flight.controller.js'
 
 
 const router = express.Router()
@@ -27,6 +28,14 @@ router.get('/airport', getAllAirports)
 router.get('/airport/:id', getAirportById)
 router.delete('/airport/:id', deleteAirportById)
 router.patch('/airport/:id', updateAirportById)
+
+//flight
+router.post('/flight', createFlight)
+router.get('/flight', getAllFlights)
+router.get('/flight/:id', getFlightById)
+router.delete('/flight/:id', deleteFlightById)
+router.patch('/flight/:id', updateFlightById)
+
 
 
 
