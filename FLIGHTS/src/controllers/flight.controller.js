@@ -22,12 +22,7 @@ export const createFlight = asyncHandler(async (req, res) => {
 
 
 export const getAllFlights = asyncHandler(async (_, res) => {
-  const flights = await Flight.find().populate([
-    { path: 'airplaneId', select: 'airLine modelNumber seatingCapacity status' },
-    { path: 'departureAirportId', select: 'name' },
-    { path: 'arrivalAirportId', select: 'name' }
-  ]);
-  return res.status(StatusCodes.OK).json(new ApiResponse(StatusCodes.OK, flights, "All flights fetched successfully"));
+
 })
 export const getFlightById = asyncHandler(async (req, res) => {
   const { id } = req.params;
