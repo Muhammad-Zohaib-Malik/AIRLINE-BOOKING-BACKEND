@@ -7,18 +7,20 @@ import { ApiError } from "../utils/ApiError.js";
 import mongoose from "mongoose";
 import { Airplane } from "../models/airplane.model.js";
 
-export const createFlight = asyncHandler(async (req, res) => {
+export const createFlight = asyncHandler(async (req, res,next) => {
   try {
     const validatedData = validateFlight(req.body);
     const flight = await Flight.create(validatedData);
     return res.status(StatusCodes.CREATED).json(new ApiResponse(StatusCodes.CREATED, flight, "Flight created successfully"))
 
   } catch (error) {
-    if (error === 11000) {
+    if (error.code === 11000) {
       throw new ApiError(StatusCodes.CONFLICT, "Flight with this name already exists");
     }
+        return next(new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message || "An error occurred"));
+
   }
-})
+})  
 
 
 export const getAllFlights = asyncHandler(async (_, res) => {
