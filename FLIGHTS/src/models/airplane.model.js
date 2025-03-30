@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const airplaneSchema = new mongoose.Schema({
-  airline: {
+  airLine: {
     type: String,
     required: [true, "Airline name is required"],
     trim: true
