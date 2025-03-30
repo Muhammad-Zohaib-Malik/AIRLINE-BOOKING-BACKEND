@@ -24,6 +24,7 @@ export const airportSchema = z.object({
 })
 
 // flight validation
+
 export const flightSchema = z.object({
   flightNumber: z.string().trim().min(1, "Flight number is required and must be a string"),
   airplaneId: z.string().length(24, "Airplane ID must be a valid ObjectId"),
@@ -31,10 +32,19 @@ export const flightSchema = z.object({
   arrivalAirportId: z.string().length(24, "Arrival Airport ID must be a valid ObjectId"),
   departureTime: z.string().min(1, "Departure time is required"),
   arrivalTime: z.string().min(1, "Arrival time is required"),
-  price: z.number().positive("Price must be a positive number"),
+  tripType: z.enum(["ONE_WAY", "ROUND_TRIP"], {
+    errorMap: () => ({ message: "Trip type must be either ONE_WAY or ROUND_TRIP" }),
+  }),
+  price: z.object({
+    economy: z.number().positive("Economy price must be a positive number"),
+    business: z.number().positive("Business price must be a positive number"),
+  }),
+  totalSeats: z.object({
+    economy: z.number().positive("Total economy seats must be a positive number"),
+    business: z.number().positive("Total business seats must be a positive number"),
+  }),
   boardingGate: z.string().optional(),
-  totalSeats: z.number().positive("Total seats must be a positive number")
-})
+});
 
 
 
