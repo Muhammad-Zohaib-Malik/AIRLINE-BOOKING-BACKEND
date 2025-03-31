@@ -48,37 +48,18 @@ const flightSchema = new mongoose.Schema(
       economy: { type: Number, required: true, min: 1 },
       business: { type: Number, required: true, min: 1 },
     },
-    bookedSeats: {
-      economy: { type: Number, default: 0 },
-      business: { type: Number, default: 0 },
-    },
-    traveller: {
-      adult: { type: Number, required: true, min: 0 },
-      child: { type: Number, required: true, min: 0 },
-      infant: { type: Number, required: true, min: 0 },
-    },
     isInternational: {
       type: Boolean,
-      default: false, 
+      default: false,
     },
   },
   { timestamps: true }
 );
-flightSchema.virtual("remainingSeats").get(function () {
-  return {
-    economy: this.totalSeats.economy - this.bookedSeats.economy,
-    business: this.totalSeats.business - this.bookedSeats.business,
-  };
-});
 
 flightSchema.index({ departureAirportId: 1, arrivalAirportId: 1 });
 flightSchema.index({ "price.economy": 1, "price.business": 1 });
 flightSchema.index({ departureTime: 1 });
 flightSchema.index({ tripType: 1 });
 flightSchema.index({ isInternational: 1 });
-
-flightSchema.set("toJSON", {
-  virtuals: true,
-});
 
 export const Flight = mongoose.model("Flight", flightSchema);
