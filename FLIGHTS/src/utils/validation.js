@@ -65,6 +65,16 @@ export const flightSchema = z.object({
   boardingGate: z.string().optional(),
 });
 
+// seat validation
+const seatSchema = z.object({
+  airplaneId: z.string().min(24, "Invalid Airplane ID"),
+  row: z.number().min(1, "Row number must be at least 1"),
+  column: z.string().max(1, "Column must be a single letter"),
+  classType: z.enum(["Economy", "Business", "First Class"]),
+  isAvailable: z.boolean().optional().default(true),
+  price: z.number().min(0, "Price cannot be negative"),
+});
+
 export const validateData = (schema, data) => {
   const parsedBody = schema.safeParse(data);
   if (!parsedBody.success) {
@@ -80,3 +90,5 @@ export const validateAirplane = (data) => validateData(airplaneSchema, data);
 export const validateCity = (data) => validateData(citySchema, data);
 export const validateAirport = (data) => validateData(airportSchema, data);
 export const validateFlight = (data) => validateData(flightSchema, data);
+export const validateSeat = (data) => validateData(seatSchema, data);
+
