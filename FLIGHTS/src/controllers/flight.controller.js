@@ -80,10 +80,10 @@ export const createFlight = asyncHandler(async (req, res) => {
 export const getAllFlights = asyncHandler(async (_, res) => {});
 
 export const getAllFlightsWithFilters = asyncHandler(async (req, res) => {
-  const { trips, price, classType, travellers } = req.query;
+  const { trips, price, classType, travellers, tripType } = req.query;
   let matchStage = {};
 
-  // ✅ Handle trips (departure & arrival airports)
+  // handle trip departure to arrival
   if (trips) {
     const [departureCode, arrivalCode] = trips.split("-");
     const airports = await Airport.find({
@@ -105,7 +105,7 @@ export const getAllFlightsWithFilters = asyncHandler(async (req, res) => {
     matchStage.arrivalAirportId = arrivalAirport._id;
   }
 
-  // ✅ Handle price filtering
+  //  Handle price filtering
   if (price && price.trim() !== "") {
     const [minPrice, maxPrice] = price.split("-").map(Number);
     matchStage.$or = [
@@ -124,11 +124,9 @@ export const getAllFlightsWithFilters = asyncHandler(async (req, res) => {
     ];
   }
 
-  // ✅ Handle travellers (Ensure no NaN errors)
+  // handle traveller and classType
   if (travellers) {
     const travellerParts = travellers.split("-").map(Number);
-
-    // Ensure always 3 values (adult, child, infant)
     const [adult = 0, child = 0, infant = 0] =
       travellerParts.length === 3 ? travellerParts : [...travellerParts, 0];
 
@@ -150,7 +148,11 @@ export const getAllFlightsWithFilters = asyncHandler(async (req, res) => {
     }
   }
 
-  // ✅ Fetch matching flights
+  // handle tripType
+  if (["ONE_WAY", "ROUND_TRIP"].includes(tripType)) {
+    matchStage.tripType = tripType;
+  }
+
   const flights = await Flight.find(matchStage);
 
   if (flights.length === 0) {
