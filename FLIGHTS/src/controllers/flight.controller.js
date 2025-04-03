@@ -77,7 +77,6 @@ export const createFlight = asyncHandler(async (req, res) => {
   }
 });
 
-
 export const getAllFlightsWithFilters = asyncHandler(async (req, res) => {
   const { trips, price, classType, travellers, tripType } = req.query;
   let matchStage = {};
@@ -187,6 +186,7 @@ export const getFlightById = asyncHandler(async (req, res) => {
       new ApiResponse(StatusCodes.OK, flight, "Flight fetched successfully")
     );
 });
+
 export const deleteFlightById = asyncHandler(async (req, res) => {
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -204,22 +204,50 @@ export const deleteFlightById = asyncHandler(async (req, res) => {
       new ApiResponse(StatusCodes.OK, flight, "Flight deleted successfully")
     );
 });
-export const updateFlightById = asyncHandler(async (req, res) => {
-  const validatedData = validateFlight(req.body);
+
+export const updateFlightBySeats = asyncHandler(async (req, res) => {
   const { id } = req.params;
+  const { seatType, value, dec } = req.body;
+
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid flight ID format");
   }
-  const flight = await Flight.findByIdAndUpdate(id, validatedData, {
-    new: true,
-  });
+
+  const flight = await Flight.findById(id);
   if (!flight) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Flight not found");
   }
+  // Validate the seatType exists in the totalSeats
+  if (!flight.totalSeats.hasOwnProperty(seatType)) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      `Invalid seat type: ${seatType}`
+    );
+  }
+  if (typeof value !== "number" || isNaN(value) || value <= 0) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Invalid value: value should be a positive number"
+    );
+  }
+
+  // Validate dec flag (if provided): it should be a boolean
+  if (dec !== undefined && typeof dec !== "boolean") {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Invalid dec flag: dec should be a boolean"
+    );
+  }
+
+  const updatedFlight = await flight.updateRemainingSeats(seatType, value, dec);
 
   return res
     .status(StatusCodes.OK)
     .json(
-      new ApiResponse(StatusCodes.OK, flight, "Flight updated successfully")
+      new ApiResponse(
+        StatusCodes.OK,
+        updatedFlight,
+        "Flight updated successfully"
+      )
     );
 });
