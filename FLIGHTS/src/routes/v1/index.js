@@ -23,7 +23,6 @@ import {
 import {
   createFlight,
   deleteFlightById,
-  getAllFlights,
   getAllFlightsWithFilters,
   getFlightById,
   updateFlightById,
@@ -53,9 +52,7 @@ router.patch("/airport/:id", updateAirportById);
 
 //flight
 router.post("/flight", createFlight);
-// router.get("/flight", getAllFlights);
 router.get("/flight", getAllFlightsWithFilters);
-
 router.get("/flight/:id", getFlightById);
 router.delete("/flight/:id", deleteFlightById);
 router.patch("/flight/:id", updateFlightById);
