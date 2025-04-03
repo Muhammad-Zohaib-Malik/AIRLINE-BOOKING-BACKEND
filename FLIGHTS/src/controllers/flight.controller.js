@@ -77,7 +77,6 @@ export const createFlight = asyncHandler(async (req, res) => {
   }
 });
 
-export const getAllFlights = asyncHandler(async (_, res) => {});
 
 export const getAllFlightsWithFilters = asyncHandler(async (req, res) => {
   const { trips, price, classType, travellers, tripType } = req.query;
