@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import { ApiError } from "../utils/ApiError.js";
+import { StatusCodes } from "http-status-codes";
 
 const flightSchema = new mongoose.Schema(
   {
@@ -45,8 +47,8 @@ const flightSchema = new mongoose.Schema(
       match: [/^[A-Za-z0-9]+$/, "Boarding gate must be alphanumeric"],
     },
     totalSeats: {
-      economy: { type: Number, required: true, min: 1 },
-      business: { type: Number, required: true, min: 1 },
+      economy: { type: Number, required: true },
+      business: { type: Number, required: true },
     },
     isInternational: {
       type: Boolean,
@@ -61,5 +63,25 @@ flightSchema.index({ "price.economy": 1, "price.business": 1 });
 flightSchema.index({ departureTime: 1 });
 flightSchema.index({ tripType: 1 });
 flightSchema.index({ isInternational: 1 });
+
+flightSchema.methods.updateRemainingSeats = async function (
+  seatType,
+  value,
+  dec = true
+) {
+  // If dec is true, decrease the seat count, otherwise increase it
+  if (dec) {
+    this.totalSeats[seatType] -= value; // Decrease the seat count
+  } else {
+    this.totalSeats[seatType] += value; // Increase the seat count
+  }
+
+  // Ensure seat count doesn't go negative
+  if (this.totalSeats[seatType] < 0) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Not enough seats available");
+  }
+
+  return this.save();
+};
 
 export const Flight = mongoose.model("Flight", flightSchema);
