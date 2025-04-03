@@ -25,7 +25,7 @@ import {
   deleteFlightById,
   getAllFlightsWithFilters,
   getFlightById,
-  updateFlightById,
+  updateFlightBySeats,
 } from "../../controllers/flight.controller.js";
 
 const router = express.Router();
@@ -55,6 +55,6 @@ router.post("/flight", createFlight);
 router.get("/flight", getAllFlightsWithFilters);
 router.get("/flight/:id", getFlightById);
 router.delete("/flight/:id", deleteFlightById);
-router.patch("/flight/:id", updateFlightById);
+router.patch("/flight/:id/seats", updateFlightBySeats);
 
 export default router;
