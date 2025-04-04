@@ -14,13 +14,18 @@ const BookingSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["Confirmed", "Pending", , "Initiated", "Cancelled"],
+      enum: ["Confirmed", "Pending", "Initiated", "Cancelled"],
       default: "Initiated",
     },
     noOfSeats: {
       type: Number,
       required: true,
       default: 1,
+    },
+    seatClass: {
+      type: String,
+      enum: ["economy", "business"],
+      required: true,
     },
     totalCost: {
       type: Number,
