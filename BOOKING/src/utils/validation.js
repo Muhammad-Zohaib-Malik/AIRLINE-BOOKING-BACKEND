@@ -9,10 +9,11 @@ export const bookingSchema = z.object({
   // userId: z.string().refine((id) => mongoose.Types.ObjectId.isValid(id), {
   //   message: "Invalid User ID format",
   // }),
-  // status: z.enum(["Confirmed", "Pending", "Initiated", "Cancelled"]).default("Initiated"),
-  noOfSeats: z.number().int().positive().min(1).max(10), 
+  userId:z.string(),
+  status: z.enum(["Confirmed", "Pending", "Initiated", "Cancelled"]).default("Initiated"),
+  noOfSeats: z.number().int().positive(),
   seatClass: z.enum(["economy", "business"]),
-  // totalCost: z.number().positive(),
+  totalCost: z.number().positive().optional(),
 });
 
 

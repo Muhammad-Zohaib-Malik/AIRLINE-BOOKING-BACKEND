@@ -217,6 +217,7 @@ export const updateFlightBySeats = asyncHandler(async (req, res) => {
   if (!flight) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Flight not found");
   }
+
   // Validate the seatType exists in the totalSeats
   if (!flight.totalSeats.hasOwnProperty(seatType)) {
     throw new ApiError(
@@ -224,6 +225,7 @@ export const updateFlightBySeats = asyncHandler(async (req, res) => {
       `Invalid seat type: ${seatType}`
     );
   }
+
   if (typeof value !== "number" || isNaN(value) || value <= 0) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
@@ -231,7 +233,7 @@ export const updateFlightBySeats = asyncHandler(async (req, res) => {
     );
   }
 
-  // Validate dec flag (if provided): it should be a boolean
+ 
   if (dec !== undefined && typeof dec !== "boolean") {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
@@ -239,15 +241,50 @@ export const updateFlightBySeats = asyncHandler(async (req, res) => {
     );
   }
 
-  const updatedFlight = await flight.updateRemainingSeats(seatType, value, dec);
+  const session = await mongoose.startSession(); 
 
-  return res
-    .status(StatusCodes.OK)
-    .json(
-      new ApiResponse(
-        StatusCodes.OK,
-        updatedFlight,
-        "Flight updated successfully"
-      )
-    );
+  try {
+    session.startTransaction(); 
+
+
+    const updatedFlight = await updateRemainingSeats(id, seatType, value, dec, session);
+
+    await session.commitTransaction(); 
+
+    return res
+      .status(StatusCodes.OK)
+      .json(
+        new ApiResponse(
+          StatusCodes.OK,
+          updatedFlight,
+          "Flight updated successfully"
+        )
+      );
+  } catch (error) {
+    await session.abortTransaction(); 
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message);
+  } finally {
+    session.endSession(); 
+  }
 });
+
+const updateRemainingSeats = async (flightId, seatType, value, dec = true, session) => {
+  const flight = await Flight.findById(flightId).session(session);
+
+  if (!flight) {
+    throw new Error('Flight not found');
+  }
+
+  if (dec) {
+    if (flight.totalSeats[seatType] < value) {
+      throw new Error('Not enough seats available');
+    }
+    flight.totalSeats[seatType] -= value;
+  } else {
+    flight.totalSeats[seatType] += value;
+  }
+
+  await flight.save({ session }); 
+
+  return flight;
+};

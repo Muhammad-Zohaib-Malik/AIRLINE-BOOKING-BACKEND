@@ -64,24 +64,6 @@ flightSchema.index({ departureTime: 1 });
 flightSchema.index({ tripType: 1 });
 flightSchema.index({ isInternational: 1 });
 
-flightSchema.methods.updateRemainingSeats = async function (
-  seatType,
-  value,
-  dec = true
-) {
-  // If dec is true, decrease the seat count, otherwise increase it
-  if (dec) {
-    this.totalSeats[seatType] -= value; // Decrease the seat count
-  } else {
-    this.totalSeats[seatType] += value; // Increase the seat count
-  }
 
-  // Ensure seat count doesn't go negative
-  if (this.totalSeats[seatType] < 0) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Not enough seats available");
-  }
-
-  return this.save();
-};
 
 export const Flight = mongoose.model("Flight", flightSchema);
