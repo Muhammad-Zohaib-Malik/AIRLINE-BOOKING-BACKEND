@@ -8,9 +8,10 @@ const BookingSchema = new mongoose.Schema(
       required: true,
     },
     userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+      // type: mongoose.Schema.Types.ObjectId,
+      // ref: "User",
+      // required: true,
+      type:String
     },
     status: {
       type: String,
@@ -29,7 +30,7 @@ const BookingSchema = new mongoose.Schema(
     },
     totalCost: {
       type: Number,
-      required: true,
+      // required: true,
     },
   },
   { timestamps: true }
