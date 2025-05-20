@@ -1,4 +1,5 @@
 import { z } from "zod";
+const objectIdRegex = /^[a-f\d]{24}$/i;
 
 // airplane validation
 export const airplaneSchema = z.object({
@@ -24,7 +25,9 @@ export const citySchema = z.object({
 export const airportSchema = z.object({
   name: z.string().trim().min(1, "Name is required and must be a string"),
   code: z.string().trim().min(1, "Code is required and must be a string"),
-  city: z.string().length(24, "City ID must be a valid ObjectId"),
+  city: z
+    .string()
+    .regex(objectIdRegex, "City ID must be a valid Mongo ObjectId"),
   address: z.string().trim().min(5, "Address is required"),
 });
 
@@ -61,7 +64,7 @@ export const flightSchema = z.object({
       .number()
       .positive("Total business seats must be a positive number"),
   }),
-  
+
   boardingGate: z.string().optional(),
 });
 
@@ -91,4 +94,3 @@ export const validateCity = (data) => validateData(citySchema, data);
 export const validateAirport = (data) => validateData(airportSchema, data);
 export const validateFlight = (data) => validateData(flightSchema, data);
 export const validateSeat = (data) => validateData(seatSchema, data);
-

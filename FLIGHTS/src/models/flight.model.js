@@ -1,6 +1,4 @@
 import mongoose from "mongoose";
-import { ApiError } from "../utils/ApiError.js";
-import { StatusCodes } from "http-status-codes";
 
 const flightSchema = new mongoose.Schema(
   {
@@ -38,7 +36,18 @@ const flightSchema = new mongoose.Schema(
     },
     price: {
       economy: { type: Number, required: true, min: 1 },
-      business: { type: Number, required: true, min: 1 },
+      business: {
+        type: Number,
+        required: true,
+        min: 1,
+        validate: {
+          validator: function (value) {
+            return value >= this.price.economy;
+          },
+          message:
+            "Business class price must be greater than or equal to economy class price",
+        },
+      },
     },
     tripType: { type: String, enum: ["ONE_WAY", "ROUND_TRIP"], required: true },
     boardingGate: {
@@ -47,8 +56,8 @@ const flightSchema = new mongoose.Schema(
       match: [/^[A-Za-z0-9]+$/, "Boarding gate must be alphanumeric"],
     },
     totalSeats: {
-      economy: { type: Number, required: true },
-      business: { type: Number, required: true },
+      economy: { type: Number, required: true, min: 1 },
+      business: { type: Number, required: true, min: 1 },
     },
     isInternational: {
       type: Boolean,
@@ -58,12 +67,12 @@ const flightSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Indexes
 flightSchema.index({ departureAirportId: 1, arrivalAirportId: 1 });
 flightSchema.index({ "price.economy": 1, "price.business": 1 });
 flightSchema.index({ departureTime: 1 });
 flightSchema.index({ tripType: 1 });
 flightSchema.index({ isInternational: 1 });
-
-
+flightSchema.index({ flightNumber: 1 }, { unique: true });
 
 export const Flight = mongoose.model("Flight", flightSchema);

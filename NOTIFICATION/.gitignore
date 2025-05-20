@@ -122,3 +122,6 @@ combined.log
 error.log
 
 # End of https://mrkandreev.name/snippets/gitignore-generator/#Node
+
+combined.log
+error.log

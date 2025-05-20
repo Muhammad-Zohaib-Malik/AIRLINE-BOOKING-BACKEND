@@ -15,6 +15,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/api', apiRoutes)
 
+app.use((err, req, res, next) => {
+  logger.error(err.stack || err.message || err);
+  res.status(500).json({ error: 'Internal Server Error' });
+});
+
 app.listen(port, () => {
   logger.info(`Server is running on port ${port}`)
 });

@@ -201,7 +201,7 @@ export const cancelBooking = async (req, res) => {
 }
 
 
-export const cancelOldBookings = async () => {
+export const cancelOldBookings = async () => {  
   try {
     // Calculate the time 5 minutes ago
     const timeThreshold = new Date(Date.now() - 1000 * 300); // 300 seconds = 5 minutes ago

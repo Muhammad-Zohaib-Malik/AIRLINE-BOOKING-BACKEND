@@ -8,55 +8,49 @@ import mongoose from "mongoose";
 import { Airplane } from "../models/airplane.model.js";
 import { Airport } from "../models/airport.model.js";
 
-export const createFlight = asyncHandler(async (req, res) => {
-  try {
-    const validatedData = validateFlight(req.body);
+const validateObjectId = (id, fieldName) => {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, `Invalid ${fieldName}`);
+  }
+};
 
-    // Validate ObjectIds
-    if (!mongoose.Types.ObjectId.isValid(validatedData.airplaneId)) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid Airplane ID");
-    }
-    if (!mongoose.Types.ObjectId.isValid(validatedData.departureAirportId)) {
-      throw new ApiError(
+const checkIfExists = async (model, id, fieldName) => {
+  const exists = await model.findById(id);
+  if (!exists) {
+    throw new ApiError(StatusCodes.NOT_FOUND, `${fieldName} not found`);
+  }
+};
+
+export const createFlight = asyncHandler(async (req, res, next) => {
+  const validatedData = validateFlight(req.body);
+
+  // Validate ObjectIds
+  validateObjectId(validatedData.airplaneId, "Airplane ID");
+  validateObjectId(validatedData.departureAirportId, "Departure Airport ID");
+  validateObjectId(validatedData.arrivalAirportId, "Arrival Airport ID");
+
+  // check ID exists in DB
+  await checkIfExists(Airplane, validatedData.airplaneId, "Airplane");
+  await checkIfExists(
+    Airport,
+    validatedData.departureAirportId,
+    "Departure airport"
+  );
+  await checkIfExists(
+    Airport,
+    validatedData.arrivalAirportId,
+    "Arrival airport"
+  );
+
+  if (validatedData.departureAirportId === validatedData.arrivalAirportId) {
+    return next(
+      new ApiError(
         StatusCodes.BAD_REQUEST,
-        "Invalid Departure Airport ID"
-      );
-    }
-    if (!mongoose.Types.ObjectId.isValid(validatedData.arrivalAirportId)) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid Arrival Airport ID");
-    }
-
-    // Check if the airplane exists
-    const airplaneExists = await Airplane.findById(validatedData.airplaneId);
-    if (!airplaneExists) {
-      throw new ApiError(StatusCodes.NOT_FOUND, "Airplane not found");
-    }
-
-    // Check if the departure airport exists
-    const departureAirportExists = await Airport.findById(
-      validatedData.departureAirportId
+        "Departure and arrival airports cannot be the same"
+      )
     );
-    if (!departureAirportExists) {
-      throw new ApiError(StatusCodes.NOT_FOUND, "Departure airport not found");
-    }
-    // Check if the arrival airport exists
-    const arrivalAirportExists = await Airport.findById(
-      validatedData.arrivalAirportId
-    );
-    if (!arrivalAirportExists) {
-      throw new ApiError(StatusCodes.NOT_FOUND, "Arrival airport not found");
-    }
-
-    // Check that departure and arrival airports are not the same
-    if (validatedData.departureAirportId === validatedData.arrivalAirportId) {
-      return next(
-        new ApiError(
-          StatusCodes.BAD_REQUEST,
-          "Departure and arrival airports cannot be the same"
-        )
-      );
-    }
-
+  }
+  try {
     const flight = await Flight.create(validatedData);
     return res
       .status(StatusCodes.CREATED)
@@ -74,6 +68,7 @@ export const createFlight = asyncHandler(async (req, res) => {
         "Flight with this name already exists"
       );
     }
+    next(error);
   }
 });
 
@@ -233,7 +228,6 @@ export const updateFlightBySeats = asyncHandler(async (req, res) => {
     );
   }
 
- 
   if (dec !== undefined && typeof dec !== "boolean") {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
@@ -241,15 +235,20 @@ export const updateFlightBySeats = asyncHandler(async (req, res) => {
     );
   }
 
-  const session = await mongoose.startSession(); 
+  const session = await mongoose.startSession();
 
   try {
-    session.startTransaction(); 
+    session.startTransaction();
 
+    const updatedFlight = await updateRemainingSeats(
+      id,
+      seatType,
+      value,
+      dec,
+      session
+    );
 
-    const updatedFlight = await updateRemainingSeats(id, seatType, value, dec, session);
-
-    await session.commitTransaction(); 
+    await session.commitTransaction();
 
     return res
       .status(StatusCodes.OK)
@@ -261,30 +260,36 @@ export const updateFlightBySeats = asyncHandler(async (req, res) => {
         )
       );
   } catch (error) {
-    await session.abortTransaction(); 
+    await session.abortTransaction();
     throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message);
   } finally {
-    session.endSession(); 
+    session.endSession();
   }
 });
 
-const updateRemainingSeats = async (flightId, seatType, value, dec = true, session) => {
+const updateRemainingSeats = async (
+  flightId,
+  seatType,
+  value,
+  dec = true,
+  session
+) => {
   const flight = await Flight.findById(flightId).session(session);
 
   if (!flight) {
-    throw new Error('Flight not found');
+    throw new Error("Flight not found");
   }
 
   if (dec) {
     if (flight.totalSeats[seatType] < value) {
-      throw new Error('Not enough seats available');
+      throw new Error("Not enough seats available");
     }
     flight.totalSeats[seatType] -= value;
   } else {
     flight.totalSeats[seatType] += value;
   }
 
-  await flight.save({ session }); 
+  await flight.save({ session });
 
   return flight;
 };
